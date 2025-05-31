@@ -1,6 +1,7 @@
 CREATE DATABASE proyecto_catedra;
 USE proyecto_catedra;
 
+-- Tabla de clientes
 CREATE TABLE clientes (
     idCliente INT AUTO_INCREMENT PRIMARY KEY,
     nombre VARCHAR(100) NOT NULL,
@@ -16,12 +17,13 @@ CREATE TABLE clientes (
     fechaInactivacion DATETIME
 );
 
+-- Tabla de empleados (corregido tipoContratacion de POR_TONA a POR_HORA)
 CREATE TABLE empleados (
     idEmpleado INT AUTO_INCREMENT PRIMARY KEY,
     nombre VARCHAR(100) NOT NULL,
     documentoIdentificacion VARCHAR(20) NOT NULL,
     tipoPersona ENUM('NATURAL', 'JURIDICA') NOT NULL,
-    tipoContratacion ENUM('PERMANENTE', 'POR_TONA') NOT NULL,
+    tipoContratacion ENUM('PERMANENTE', 'POR_HORA') NOT NULL,
     telefono VARCHAR(15),
     correo VARCHAR(100),
     direccion VARCHAR(200),
@@ -32,6 +34,7 @@ CREATE TABLE empleados (
     fechaInactivacion DATETIME
 );
 
+-- Tabla de cotizaciones
 CREATE TABLE cotizaciones (
     idCotizacion INT AUTO_INCREMENT PRIMARY KEY,
     idCliente INT NOT NULL,
@@ -39,28 +42,83 @@ CREATE TABLE cotizaciones (
     fechaInicio DATETIME NOT NULL,
     fechaFin DATETIME,
     costoTotal FLOAT,
+    costosAdicionales FLOAT DEFAULT 0,
+    creadoPor VARCHAR(50) NOT NULL,
+    fechaCreacion DATETIME NOT NULL,
     FOREIGN KEY (idCliente) REFERENCES clientes(idCliente)
 );
 
+-- Tabla de asignaciones
 CREATE TABLE asignaciones (
     idAsignacion INT AUTO_INCREMENT PRIMARY KEY,
     idCotizacion INT NOT NULL,
     idEmpleado INT NOT NULL,
     tituloActividad VARCHAR(200) NOT NULL,
-    listaActividades TEXT,
+    areaAsignada VARCHAR(100),
     fechaInicio DATETIME NOT NULL,
     fechaFin DATETIME,
     duracionHoras FLOAT,
     costoPorHora FLOAT NOT NULL,
+    incrementoExtra FLOAT DEFAULT 0,
+    costoTotal FLOAT,
     FOREIGN KEY (idCotizacion) REFERENCES cotizaciones(idCotizacion),
     FOREIGN KEY (idEmpleado) REFERENCES empleados(idEmpleado)
 );
 
+-- Tabla de subtareas
 CREATE TABLE subtareas (
     id INT AUTO_INCREMENT PRIMARY KEY,
     idAsignacion INT NOT NULL,
-    nombre VARCHAR(100) NOT NULL,
+    titulo VARCHAR(100) NOT NULL,
     descripcion TEXT,
-    estado VARCHAR(50),
+    estado ENUM('PENDIENTE', 'EN_PROGRESO', 'COMPLETADA') DEFAULT 'PENDIENTE',
     FOREIGN KEY (idAsignacion) REFERENCES asignaciones(idAsignacion)
 );
+
+-- Insertar datos de muestra para CLIENTES
+INSERT INTO clientes (nombre, documentoIdentificacion, tipoPersona, telefono, correo, direccion, estado, creadoPor, fechaCreacion) VALUES
+('TechCorp S.A.', '123456789-0', 'JURIDICA', '2255-0123', 'contacto@techcorp.com', 'Av. Principal 123, San Salvador', 'ACTIVO', 'admin', '2024-01-15 10:30:00'),
+('Juan Pérez', '01234567-8', 'NATURAL', '7755-0456', 'juan.perez@email.com', 'Calle Secundaria 456, Santa Ana', 'ACTIVO', 'admin', '2024-02-20 14:45:00'),
+('Industrial Corp', '987654321-0', 'JURIDICA', '2255-0789', 'info@industrial.com', 'Zona Industrial 789, San Miguel', 'ACTIVO', 'admin', '2024-01-10 09:15:00'),
+('Evelyn', '98765432-1', 'NATURAL', '5553-0456', 'evelyn23.gonzalez@multiworks.com', 'carretera de oro udb', 'ACTIVO', 'admin', '2024-03-05 11:20:00');
+
+-- Insertar datos de muestra para EMPLEADOS
+INSERT INTO empleados (nombre, documentoIdentificacion, tipoPersona, tipoContratacion, telefono, correo, direccion, estado, creadoPor, fechaCreacion) VALUES
+('Juan Hernández', '12345678-9', 'NATURAL', 'PERMANENTE', '7755-1234', 'juan.hernandez@multiworks.com', 'Av. Central 123, San Salvador', 'ACTIVO', 'admin', '2024-01-15 08:30:00'),
+('María López', '87654321-0', 'NATURAL', 'POR_HORA', '7755-5678', 'maria.lopez@multiworks.com', 'Calle Norte 456, Santa Tecla', 'ACTIVO', 'admin', '2024-02-10 09:45:00'),
+('Servicios Técnicos S.A.', '456789123-0', 'JURIDICA', 'POR_HORA', '2255-9012', 'contacto@servicios-tecnicos.com', 'Zona Industrial 789, Soyapango', 'ACTIVO', 'admin', '2024-01-05 10:15:00'),
+('Juan', '65432198-7', 'JURIDICA', 'POR_HORA', '0000-0000', 'juan.perez@email.com', 'carretera de oro', 'ACTIVO', 'admin', '2024-03-01 11:30:00');
+
+-- Insertar datos de muestra para COTIZACIONES
+INSERT INTO cotizaciones (idCliente, estado, fechaInicio, fechaFin, costoTotal, costosAdicionales, creadoPor, fechaCreacion) VALUES
+(1, 'EN_PROCESO', '2025-01-01 08:00:00', '2025-01-08 17:00:00', 2116.00, 1500.00, 'admin', '2024-12-15 14:30:00'),
+(3, 'FINALIZADA', '2025-01-15 08:00:00', '2025-01-20 17:00:00', 1000.00, 200.00, 'admin', '2024-12-10 10:45:00'),
+(2, 'EN_PROCESO', '2025-02-01 08:00:00', '2025-02-15 17:00:00', 3500.00, 500.00, 'admin', '2024-12-20 09:15:00'),
+(1, 'FINALIZADA', '2025-01-10 08:00:00', '2025-01-25 17:00:00', 4200.00, 700.00, 'admin', '2024-12-05 11:30:00');
+
+-- Insertar datos de muestra para ASIGNACIONES
+INSERT INTO asignaciones (idCotizacion, idEmpleado, tituloActividad, areaAsignada, fechaInicio, fechaFin, duracionHoras, costoPorHora, incrementoExtra, costoTotal) VALUES
+(1, 1, 'Implementación de cableado estructurado', 'Redes de Comunicación', '2025-01-01 08:00:00', '2025-01-05 17:00:00', 40, 10.00, 10.0, 440.00),
+(1, 1, 'Configuración red interna', 'Redes de Comunicación', '2025-01-06 08:00:00', '2025-01-07 17:00:00', 16, 10.00, 10.0, 176.00),
+(2, 2, 'Mantenimiento eléctrico', 'Electricidad', '2025-01-15 08:00:00', '2025-01-18 17:00:00', 24, 15.00, 5.0, 378.00),
+(3, 3, 'Desarrollo de software a medida', 'Programación', '2025-02-01 08:00:00', '2025-02-10 17:00:00', 80, 25.00, 15.0, 2300.00);
+
+-- Insertar datos de muestra para SUBTAREAS
+INSERT INTO subtareas (idAsignacion, titulo, descripcion, estado) VALUES
+(1, 'Compra de materiales', 'Adquisición de cables, conectores y herramientas necesarias', 'COMPLETADA'),
+(1, 'Instalación de canaletas', 'Colocación de canaletas en todas las oficinas según plano', 'COMPLETADA'),
+(1, 'Tendido de cables', 'Instalación del cableado estructurado en todas las áreas', 'EN_PROGRESO'),
+(1, 'Pruebas de conectividad', 'Verificación de la correcta instalación y funcionamiento', 'PENDIENTE'),
+
+(2, 'Subneteo de la red para la IP v4 192.168.1.0/24', 'Se deberá realizar el Subneteo de la red para tener la capacidad de aislar la siguiente cantidad de subgrupos de redes: Comercial, Gerencia, IT, Bodega', 'EN_PROGRESO'),
+(2, 'Implementar las subredes IP v4', 'Realizar las configuraciones pertinentes para tener listas las siguientes subredes: Comercial, Gerencia, IT, Bodega', 'PENDIENTE'),
+(2, 'Implementación de configuración de red IP v6', 'Deberá realizar una implementación dentro de la red, para que sea compatible con IP v6 para la dirección 2001:db8::/64', 'PENDIENTE'),
+
+(3, 'Revisión de instalaciones', 'Inspección general de las instalaciones eléctricas', 'COMPLETADA'),
+(3, 'Cambio de cableado defectuoso', 'Reemplazo de cables en mal estado', 'COMPLETADA'),
+(3, 'Instalación de nuevos circuitos', 'Implementación de circuitos adicionales para nuevos equipos', 'COMPLETADA'),
+
+(4, 'Análisis de requerimientos', 'Reunión con el cliente para definir necesidades específicas', 'COMPLETADA'),
+(4, 'Diseño de la arquitectura', 'Creación de la estructura del software y base de datos', 'COMPLETADA'),
+(4, 'Desarrollo del backend', 'Programación de la lógica de negocio y API', 'EN_PROGRESO'),
+(4, 'Desarrollo del frontend', 'Creación de la interfaz de usuario', 'PENDIENTE');
