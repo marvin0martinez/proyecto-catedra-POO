@@ -1,0 +1,66 @@
+CREATE DATABASE proyecto_catedra;
+USE proyecto_catedra;
+
+CREATE TABLE clientes (
+    idCliente INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(100) NOT NULL,
+    documentoIdentificacion VARCHAR(20) NOT NULL,
+    tipoPersona ENUM('NATURAL', 'JURIDICA') NOT NULL,
+    telefono VARCHAR(15),
+    correo VARCHAR(100),
+    direccion VARCHAR(200),
+    estado ENUM('ACTIVO', 'INACTIVO') NOT NULL DEFAULT 'ACTIVO',
+    creadoPor VARCHAR(50) NOT NULL,
+    fechaCreacion DATETIME NOT NULL,
+    fechaActualizacion DATETIME,
+    fechaInactivacion DATETIME
+);
+
+CREATE TABLE empleados (
+    idEmpleado INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(100) NOT NULL,
+    documentoIdentificacion VARCHAR(20) NOT NULL,
+    tipoPersona ENUM('NATURAL', 'JURIDICA') NOT NULL,
+    tipoContratacion ENUM('PERMANENTE', 'POR_TONA') NOT NULL,
+    telefono VARCHAR(15),
+    correo VARCHAR(100),
+    direccion VARCHAR(200),
+    estado ENUM('ACTIVO', 'INACTIVO') NOT NULL DEFAULT 'ACTIVO',
+    creadoPor VARCHAR(50) NOT NULL,
+    fechaCreacion DATETIME NOT NULL,
+    fechaActualizacion DATETIME,
+    fechaInactivacion DATETIME
+);
+
+CREATE TABLE cotizaciones (
+    idCotizacion INT AUTO_INCREMENT PRIMARY KEY,
+    idCliente INT NOT NULL,
+    estado ENUM('EN_PROCESO', 'FINALIZADA') NOT NULL DEFAULT 'EN_PROCESO',
+    fechaInicio DATETIME NOT NULL,
+    fechaFin DATETIME,
+    costoTotal FLOAT,
+    FOREIGN KEY (idCliente) REFERENCES clientes(idCliente)
+);
+
+CREATE TABLE asignaciones (
+    idAsignacion INT AUTO_INCREMENT PRIMARY KEY,
+    idCotizacion INT NOT NULL,
+    idEmpleado INT NOT NULL,
+    tituloActividad VARCHAR(200) NOT NULL,
+    listaActividades TEXT,
+    fechaInicio DATETIME NOT NULL,
+    fechaFin DATETIME,
+    duracionHoras FLOAT,
+    costoPorHora FLOAT NOT NULL,
+    FOREIGN KEY (idCotizacion) REFERENCES cotizaciones(idCotizacion),
+    FOREIGN KEY (idEmpleado) REFERENCES empleados(idEmpleado)
+);
+
+CREATE TABLE subtareas (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    idAsignacion INT NOT NULL,
+    nombre VARCHAR(100) NOT NULL,
+    descripcion TEXT,
+    estado VARCHAR(50),
+    FOREIGN KEY (idAsignacion) REFERENCES asignaciones(idAsignacion)
+);
